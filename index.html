@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Smart Week 3.8 – Smart Mail Studio</title>
+<title>My Smart Week 3.9 – Kontrast-Update</title>
 <style>
 :root{font-family:Arial,sans-serif;color:#23334d;background:#eaf4ff}*{box-sizing:border-box}body{margin:0;padding:18px}.app{max-width:1050px;margin:auto}header{text-align:center}h1{color:#2456a6}.card{background:white;padding:20px;border-radius:16px;margin:16px 0;box-shadow:0 4px 12px #0001}.form{display:flex;flex-wrap:wrap;gap:10px}.field{display:flex;flex-direction:column;gap:5px;flex:1 1 140px}input,select,button{padding:10px;border-radius:9px;border:1px solid #c9d5e4;font-size:15px}button{background:#2456a6;color:white;cursor:pointer}button.secondary{background:#e9f1ff;color:#2456a6}button.danger{background:#a33232}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #80b7ff}button:disabled{opacity:.5;cursor:not-allowed}.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.day{background:#f1f6ff;padding:9px;border-radius:10px;min-height:110px;overflow-wrap:anywhere}.event{background:white;border-left:4px solid #4385e5;padding:8px;margin:7px 0;border-radius:8px;font-size:13px}.event.fest{border-left-color:#ef9b20}.event.offen{border-left-color:#9298a2;border-left-style:dashed}.event.conflict{outline:2px solid #d34848}.event button,.listrow button{font-size:12px;padding:5px 7px;margin-top:5px}.listrow{padding:12px;border-bottom:1px solid #ddd}.hidden{display:none}.notice{background:#fff3dd;padding:10px;border-radius:9px;margin:8px 0}.muted{color:#586b85;font-size:13px}.status{min-height:20px}@media(max-width:750px){.days{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.days{grid-template-columns:1fr}}
 
@@ -47,10 +47,34 @@
 .mail-counts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
 .mail-counts span{background:#fff;border:1px solid #ddd6fe;border-radius:999px;padding:7px 11px;font-size:13px;font-weight:700}
 @media(max-width:600px){.mail-lab{padding:10px}}
+
+/* Version 3.9: Kontrast-Update für Windows, iPad und iPhone */
+:root{color:#10233f;background:#eef3fb}
+body{color:#10233f}
+.app>header{background:linear-gradient(120deg,#102b56,#17477b);border-radius:20px;padding:20px 12px;margin-bottom:14px;box-shadow:0 6px 18px #142e5340}
+.app>header h1,.app>header p{color:#fff}
+.card{border:1px solid #b9c9df;box-shadow:0 5px 18px #102c5220}
+.navtile{background:var(--tint);border:2px solid var(--tile);box-shadow:0 4px 12px #102c5225;color:#10233f;min-height:116px}
+.navtile strong{font-size:15px;font-weight:800}
+.navtile .symbol{box-shadow:0 2px 5px #0003}
+.navtile:hover{background:#fff;border-width:3px;box-shadow:0 9px 22px #102c5240}
+.navtile.active{background:#fff;outline:3px solid var(--tile);outline-offset:0}
+button:not(.navtile){border:2px solid #173d73;font-weight:700;min-height:42px}
+button.secondary{background:#d9e8ff;color:#123c79;border-color:#2355a0}
+button.danger{background:#9f202a;border-color:#76141c;color:#fff}
+button:not(.navtile):not(:disabled):hover{filter:brightness(.92);box-shadow:0 3px 9px #102c5230}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #f59e0b;outline-offset:3px}
+input,select,textarea{border:2px solid #647c9f;background:#fff;color:#142943}
+.overviewitem,.day{background:#e2edff;border:1px solid #b3c8e6}
+.mail-lab{border:2px solid #6d40b5}
+.mail-test-grid button{background:#f0e8ff;color:#39126b;border:2px solid #7547b5}
+.mail-test-grid button:hover{background:#dfccff}
+@media(max-width:650px){.app>header{border-radius:14px}.navtile{min-height:105px;padding:12px 6px}.navtile strong{font-size:13px}button:not(.navtile){min-height:44px}}
+@media(hover:none){.navtile:hover{background:var(--tint);border-width:2px;box-shadow:0 4px 12px #102c5225}.navtile:active{background:#fff;transform:scale(.96)}}
 </style>
 </head>
 <body><div class="app">
-<header><h1>🚀 My Smart Week 3.5</h1><p>📚 Mit deinem Wochenplan 2026/27</p><p>Mein Wochenassistent 🤖</p></header>
+<header><h1>🚀 My Smart Week 3.9</h1><p>📚 Mit deinem Wochenplan 2026/27</p><p>Mein Wochenassistent 🤖</p></header>
 <nav class="navgrid" aria-label="Hauptmenü">
 <button class="navtile active" type="button" data-panel="home" style="--tile:#2563eb;--tint:#dbeafe" aria-pressed="true"><span class="symbol">🏠</span><strong>Startseite</strong></button>
 <button class="navtile" type="button" data-panel="calendar" style="--tile:#0d9488;--tint:#ccfbf1" aria-pressed="false"><span class="symbol">📅</span><strong>Kalender</strong></button>
