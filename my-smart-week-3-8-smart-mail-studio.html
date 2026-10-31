@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My Smart Week 3.8 – Smart Mail Studio</title>
+<style>
+:root{font-family:Arial,sans-serif;color:#23334d;background:#eaf4ff}*{box-sizing:border-box}body{margin:0;padding:18px}.app{max-width:1050px;margin:auto}header{text-align:center}h1{color:#2456a6}.card{background:white;padding:20px;border-radius:16px;margin:16px 0;box-shadow:0 4px 12px #0001}.form{display:flex;flex-wrap:wrap;gap:10px}.field{display:flex;flex-direction:column;gap:5px;flex:1 1 140px}input,select,button{padding:10px;border-radius:9px;border:1px solid #c9d5e4;font-size:15px}button{background:#2456a6;color:white;cursor:pointer}button.secondary{background:#e9f1ff;color:#2456a6}button.danger{background:#a33232}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #80b7ff}button:disabled{opacity:.5;cursor:not-allowed}.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.day{background:#f1f6ff;padding:9px;border-radius:10px;min-height:110px;overflow-wrap:anywhere}.event{background:white;border-left:4px solid #4385e5;padding:8px;margin:7px 0;border-radius:8px;font-size:13px}.event.fest{border-left-color:#ef9b20}.event.offen{border-left-color:#9298a2;border-left-style:dashed}.event.conflict{outline:2px solid #d34848}.event button,.listrow button{font-size:12px;padding:5px 7px;margin-top:5px}.listrow{padding:12px;border-bottom:1px solid #ddd}.hidden{display:none}.notice{background:#fff3dd;padding:10px;border-radius:9px;margin:8px 0}.muted{color:#586b85;font-size:13px}.status{min-height:20px}@media(max-width:750px){.days{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.days{grid-template-columns:1fr}}
+
+/* Aktivitätsfarben, unabhängig vom Terminstatus */
+.event,.listrow{border-left:5px solid var(--category-color,#64748b);background:var(--category-bg,#f1f5f9);color:#17283c}
+.event.fest,.event.offen{border-left-color:var(--category-color,#64748b)}
+.event.offen{border-left-style:dashed;opacity:.78}
+.listrow{border-radius:10px;margin:7px 0}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.legend span{padding:7px 10px;border-radius:9px;font-size:13px;font-weight:600}
+
+.files-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.fileitem{border:1px solid #dbe4f0;border-radius:12px;padding:12px;background:#f8fbff;overflow-wrap:anywhere}.fileactions{display:flex;flex-wrap:wrap;gap:6px}.fileactions button{font-size:13px}.filemeta{font-size:12px;color:#586b85}.hint{padding:12px;background:#eaf4ff;border-radius:10px}#fileStatus{min-height:1.5em}
+
+/* Dashboard Navigation */
+.navgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;margin:20px 0}
+.navtile{--tile:#2563eb;--tint:#dbeafe;background:var(--tint);border:2px solid transparent;color:#1e293b;display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 8px;border-radius:18px;min-height:116px;transition:transform .18s,box-shadow .18s,border-color .18s;cursor:pointer}
+.navtile .symbol{display:grid;place-items:center;background:var(--tile);color:white;width:47px;height:47px;border-radius:13px;font-size:24px}
+.navtile:hover{transform:translateY(-5px) scale(1.035);box-shadow:0 9px 22px #243b5350;border-color:var(--tile)}
+.navtile:focus-visible{outline:3px solid #111827;outline-offset:3px}
+.navtile.active{border-color:var(--tile);box-shadow:0 3px 12px #0002}
+.navtile strong{font-size:14px}
+.panel[hidden]{display:none!important}
+.app header{padding:12px 0}
+#overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.overviewitem{background:#f1f6ff;border-radius:12px;padding:14px}
+@media(max-width:480px){.navgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.navtile{min-height:102px}}
+@media(prefers-reduced-motion:reduce){.navtile{transition:none}.navtile:hover{transform:none}}
+@media(max-width:650px){body{padding:8px}.card{padding:14px;margin:10px 0}.navgrid{gap:8px}.navtile{padding:12px 5px;min-height:92px}.navtile .symbol{width:42px;height:42px;font-size:22px}.navtile strong{font-size:12px}.form .field{flex-basis:100%}input,select,button{max-width:100%}}
+@media(hover:none){.navtile:hover{transform:none;box-shadow:none}.navtile:active{transform:scale(.97);border-color:var(--tile)}}
+/* 3.8: klareres Dashboard und Testlabor */
+:root{background:linear-gradient(145deg,#edf5ff,#f5f0ff 55%,#edfff8);background-attachment:fixed}
+.app{max-width:1140px}header h1{letter-spacing:-.035em}
+.card{border:1px solid #e3eaf5;box-shadow:0 12px 30px #243b5310}
+.navtile{position:relative;box-shadow:0 3px 12px #243b5310}
+.navtile:hover::after,.navtile:focus-visible::after{content:'Hier klicken';position:absolute;bottom:3px;right:7px;font-size:10px;color:var(--tile);font-weight:700}
+.navtile.active{outline:2px solid var(--tile);outline-offset:1px}
+.mail-lab{border:1px solid #c4b5fd;border-radius:16px;padding:15px;background:linear-gradient(130deg,#f5f3ff,#eff6ff)}
+.mail-test-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:9px;margin:12px 0}
+.mail-test-grid button{background:white;color:#4c1d95;border:1px solid #c4b5fd;text-align:left;min-height:60px;font-weight:700}
+.mail-test-grid button:hover{background:#ede9fe;transform:translateY(-2px)}
+.mail-result{font-weight:700;border-left:5px solid #7c3aed;background:#f5f3ff;padding:12px;border-radius:10px}
+.mail-counts{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.mail-counts span{background:#fff;border:1px solid #ddd6fe;border-radius:999px;padding:7px 11px;font-size:13px;font-weight:700}
+@media(max-width:600px){.mail-lab{padding:10px}}
+</style>
+</head>
+<body><div class="app">
+<header><h1>🚀 My Smart Week 3.5</h1><p>📚 Mit deinem Wochenplan 2026/27</p><p>Mein Wochenassistent 🤖</p></header>
+<nav class="navgrid" aria-label="Hauptmenü">
+<button class="navtile active" type="button" data-panel="home" style="--tile:#2563eb;--tint:#dbeafe" aria-pressed="true"><span class="symbol">🏠</span><strong>Startseite</strong></button>
+<button class="navtile" type="button" data-panel="calendar" style="--tile:#0d9488;--tint:#ccfbf1" aria-pressed="false"><span class="symbol">📅</span><strong>Kalender</strong></button>
+<button class="navtile" type="button" data-panel="files" style="--tile:#d97706;--tint:#fef3c7" aria-pressed="false"><span class="symbol">📂</span><strong>Smart Files</strong></button>
+<button class="navtile" type="button" data-panel="clips" style="--tile:#e11d48;--tint:#ffe4e6" aria-pressed="false"><span class="symbol">🎬</span><strong>Meine Clips</strong></button>
+<button class="navtile" type="button" data-panel="school" style="--tile:#1d4ed8;--tint:#dbeafe" aria-pressed="false"><span class="symbol">🏫</span><strong>Schule</strong></button>
+<button class="navtile" type="button" data-panel="special" style="--tile:#db2777;--tint:#fce7f3" aria-pressed="false"><span class="symbol">🎁</span><strong>Besondere Tage</strong></button>
+<button class="navtile" type="button" data-panel="mail" style="--tile:#7c3aed;--tint:#ede9fe" aria-pressed="false"><span class="symbol">📧</span><strong>Smart Mail</strong></button>
+<button class="navtile" type="button" data-panel="golf" style="--tile:#15803d;--tint:#dcfce7" aria-pressed="false"><span class="symbol">⛳</span><strong>Golf</strong></button>
+<button class="navtile" type="button" data-panel="handball" style="--tile:#c2410c;--tint:#ffedd5" aria-pressed="false"><span class="symbol">🤾</span><strong>Handball</strong></button>
+<button class="navtile" type="button" data-panel="klavier" style="--tile:#7e22ce;--tint:#f3e8ff" aria-pressed="false"><span class="symbol">🎹</span><strong>Klavier</strong></button>
+<button class="navtile" type="button" data-panel="gesang" style="--tile:#be185d;--tint:#fce7f3" aria-pressed="false"><span class="symbol">🎤</span><strong>Gesang & Chor</strong></button>
+<button class="navtile" type="button" data-panel="schach" style="--tile:#0f766e;--tint:#ccfbf1" aria-pressed="false"><span class="symbol">♟️</span><strong>Schach</strong></button>
+<button class="navtile" type="button" data-panel="tasks" style="--tile:#7c3aed;--tint:#ede9fe" aria-pressed="false"><span class="symbol">📝</span><strong>Aufgaben</strong></button>
+<button class="navtile" type="button" data-panel="ai" style="--tile:#db2777;--tint:#fce7f3" aria-pressed="false"><span class="symbol">🤖</span><strong>KI-Assistent</strong></button>
+</nav>
+<section class="card panel" data-section="home"><h2>👋 Willkommen bei My Smart Week!</h2><p>Wähle oben ein farbiges Icon aus. Fahre mit der Maus darüber oder tippe auf dem iPad auf ein Icon.</p><div id="overview"><div class="overviewitem"><strong>📅 Kalender</strong><p>Deine Termine verwalten und Konflikte prüfen</p></div><div class="overviewitem"><strong>📂 Smart Files</strong><p>Dokumente sicher auf diesem Gerät verwalten</p></div><div class="overviewitem"><strong>⛳ Golf</strong><p>Handicap 27,4 · Ziel 10–15</p></div></div></section>
+<section class="card panel" data-section="clips" hidden><h2>🎬 Meine Clips</h2><p>Speichere deine Golf-, Handball- und Musikvideos auf diesem Gerät und schau sie direkt hier an.</p><form id="clipForm" class="form"><label class="field">Video auswählen<input id="clipInput" type="file" accept="video/*,.mp4,.mov,.webm,.m4v" required></label><label class="field">Kategorie<select id="clipCategory"><option value="golf">⛳ Golf</option><option value="handball">🤾 Handball</option><option value="klavier">🎹 Klavier</option><option value="gesang">🎤 Gesang & Chor</option><option value="sonstiges">🎬 Sonstiges</option></select></label><label class="field">Titel<input id="clipTitle" maxlength="90" placeholder="z. B. Mein Abschlag"></label><div class="field"><span>&nbsp;</span><button type="submit">🎬 Clip speichern</button></div></form><p id="clipStatus" role="status" class="muted"></p><label class="field">Clips anzeigen<select id="clipFilter"><option value="alle">Alle</option><option value="golf">⛳ Golf</option><option value="handball">🤾 Handball</option><option value="klavier">🎹 Klavier</option><option value="gesang">🎤 Gesang & Chor</option><option value="sonstiges">🎬 Sonstiges</option></select></label><div id="clipList"></div><p class="muted">Nur lokal auf diesem Gerät gespeichert. Keine Synchronisierung. Behalte deine Originalvideos! Videos bis 80 MB; große Dateien können je nach Browser trotzdem scheitern. Die Wiedergabe hängt vom Videoformat ab.</p></section>
+<section class="card panel" data-section="school" hidden><h2>🏫 Meine Schule</h2><p>Elternbriefe, Informationsblätter, Einladungen und Stundenpläne sammeln.</p><button type="button" id="schoolUpload">📎 Schul-Dokument hinzufügen</button><p class="muted">Du gelangst zu Smart Files. Der Ordner „Schule“ wird automatisch ausgewählt. Ein Dokument erzeugt nicht ohne deine Zustimmung einen Kalendereintrag.</p></section>
+<section class="card panel" data-section="special" hidden><h2>🎁 Besondere Tage</h2><p>Geburtstage und besondere Ereignisse. Geburtstage wiederholen sich jedes Jahr.</p><form id="specialForm" class="form"><label class="field">Ereignis<input id="specialName" required maxlength="90" placeholder="z. B. Geburtstag von Oma"></label><label class="field">Datum<input id="specialDate" type="date" required></label><label class="field">Wiederholung<select id="specialRepeat"><option value="yearly">Jedes Jahr</option><option value="once">Nur einmal</option></select></label><div class="field"><span>&nbsp;</span><button type="submit">🎁 Speichern</button></div></form><p id="specialStatus" role="status"></p><div id="specialList"></div><p class="muted">Diese Einträge werden nur in diesem Browser gespeichert. Automatische Push-Erinnerungen gibt es noch nicht.</p></section>
+<section class="card panel" data-section="mail" hidden>
+<h2>📧 Smart Mail – Testlabor 3.8</h2>
+<div class="mail-lab"><strong>🧪 Chefentwickler-Challenge: 5 Testnachrichten</strong>
+<p class="muted">Tippe auf ein Beispiel, überprüfe den Vorschlag und klicke auf „Nachricht prüfen“. Du kannst den Text vorher verändern. Alle Beispiele sind erfunden.</p>
+<div class="mail-test-grid" id="mailSamples"></div>
+<div class="mail-counts" id="mailCounts" aria-live="polite"></div>
+</div>
+<p>Füge eine <strong>Test-E-Mail</strong> ein oder importiere eine <strong>.txt</strong>-Datei. Smart Mail sortiert sie mit einfachen Stichwortregeln. Es liest dein Gmail-Postfach <strong>nicht</strong> und verwendet noch keine KI.</p>
+<p class="hint">🔒 Nur lokale Verarbeitung in diesem Browser. Bitte zunächst erfundene Beispiele verwenden und keine persönlichen Daten von Mitschülern hochladen. Es werden keine Gmail-Nachrichten verschoben oder gelöscht.</p>
+<form id="mailForm"><div class="form">
+<label class="field">Absender (optional)<input id="mailSender" maxlength="150" placeholder="z. B. Golftrainer"></label>
+<label class="field">Betreff<input id="mailSubject" maxlength="200" required placeholder="z. B. Training am Samstag"></label>
+<label class="field">Textdatei (.txt, optional)<input id="mailFile" type="file" accept=".txt,text/plain"></label>
+</div><label class="field">Nachrichtentext<textarea id="mailBody" rows="6" style="width:100%;min-height:120px" maxlength="15000" placeholder="Hier den Inhalt einer Testnachricht einfügen ..."></textarea></label>
+<p><button type="submit">🔎 Nachricht prüfen</button> <button type="button" class="secondary" id="mailExample">✨ Beispiel einsetzen</button></p></form>
+<p id="mailStatus" role="status" aria-live="polite"></p><div id="mailResult"></div>
+<h3>📬 Meine Test-Nachrichten</h3><label class="field">Anzeigen<select id="mailFilter"><option value="all">Alle</option><option value="important">✅ Wichtig</option><option value="review">❔ Prüfen</option><option value="ads">🏷️ Mögliche Werbung</option></select></label><div id="mailList"></div>
+<p class="muted">Diese Einträge werden lokal gespeichert. Stichwortregeln können sich irren. Termine werden nicht automatisch in den Kalender übernommen. Werbung wird niemals automatisch gelöscht.</p>
+</section>
+<section class="card panel" data-section="golf" hidden><h2>⛳ Mein Golf</h2><p><strong>Handicap:</strong> 27,4 · <strong>Ziel nächste Saison:</strong> 10–15</p><p>Wintertraining: Samstag oder Sonntag noch offen. BWGV-Kadertermine noch nicht bekannt.</p><p class="muted">Ein ausführlicher Golf-Tracker kommt später. Golf-Termine bearbeitest du im Kalender.</p></section>
+<section class="card panel" data-section="handball" hidden><h2>🤾 Mein Handball</h2><p>Deine Handballtermine aus dem Kalender:</p><div id="activity-handball"></div></section>
+<section class="card panel" data-section="klavier" hidden><h2>🎹 Mein Klavier</h2><p>Deine Klaviertermine aus dem Kalender:</p><div id="activity-klavier"></div></section>
+<section class="card panel" data-section="gesang" hidden><h2>🎤 Gesang & Chor</h2><p>Deine Gesangs- und Chortermine aus dem Kalender:</p><div id="activity-gesang"></div></section>
+<section class="card panel" data-section="schach" hidden><h2>♟️ Mein Schach</h2><p>Deine Schachtermine aus dem Kalender:</p><div id="activity-schach"></div></section>
+<section class="card panel" data-section="tasks" hidden><h2>📝 Aufgaben</h2><p>Hier entsteht später deine Hausaufgaben- und To-do-Liste.</p></section>
+<section class="card panel" data-section="ai" hidden><h2>🤖 KI-Assistent</h2><p>Hier bauen wir später den KI-Assistenten ein. Aktuell erkennt die App Terminkonflikte durch einen festen Algorithmus, nicht durch KI.</p></section>
+<section class="card panel" data-section="calendar" hidden><h2>➕ Termin eintragen</h2><form id="eventForm"><div class="form">
+<label class="field">Terminname<input id="name" maxlength="100" required placeholder="z. B. Golftraining"></label>
+<label class="field">Wochentag<select id="day"><option>Montag</option><option>Dienstag</option><option>Mittwoch</option><option>Donnerstag</option><option>Freitag</option><option>Samstag</option><option>Sonntag</option></select></label>
+<label class="field">Beginn<input id="start" type="time" required></label>
+<label class="field">Ende<input id="end" type="time" required></label>
+<label class="field">Aktivität<select id="category"><option value="schule">🏫 Schule</option><option value="golf">⛳ Golf</option><option value="handball">🤾 Handball</option><option value="klavier">🎹 Klavier</option><option value="gesang">🎤 Gesang & Chor</option><option value="schach">♟️ Schach</option><option value="sonstiges" selected>📌 Sonstiges</option></select></label>
+<label class="field">Terminart<select id="type"><option value="fest">🔒 Fest</option><option value="flexibel">🔄 Flexibel</option><option value="offen">❔ Unbestätigt</option></select></label>
+</div><p><button id="save" type="submit">Termin speichern</button> <button class="secondary" id="cancel" type="button" hidden>Bearbeitung abbrechen</button></p><p class="status" id="status" role="status" aria-live="polite"></p></form></section>
+<section class="card panel" data-section="calendar" hidden><h2>⚠️ Konfliktprüfung</h2><div id="warnings" aria-live="polite">Keine Konflikte erkannt.</div><p class="muted">Die beiden Golf-Termine sind nur mögliche Alternativen, keine zwei Trainings. Unbestätigte Termine werden nicht als Konflikt gezählt. Termine gelten für eine wiederkehrende Woche.</p></section>
+<section class="card panel" data-section="calendar" hidden><h2>📅 Mein Wochenplan</h2><div id="legend" class="legend" aria-label="Farblegende"></div><p><button id="calendarBtn" type="button">Kalender</button> <button id="listBtn" class="secondary" type="button">Liste</button></p><div id="calendar" class="days"></div><div id="list" class="hidden"></div></section>
+
+<section class="card panel" data-section="files" id="smartFiles" hidden>
+<h2>📂 Smart Files – Meine Dokumente</h2>
+<p class="hint">Speichere hier PDFs, Word- und Excel-Dateien oder Fotos von Trainern und Lehrern. Die Dateien bleiben <strong>nur in diesem Browser auf diesem Gerät</strong> – noch keine Cloud und noch keine KI-Auswertung.</p>
+<form id="fileForm">
+<div class="form">
+<label class="field">Datei auswählen<input type="file" id="fileInput" required accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.webp,.txt"></label>
+<label class="field">Ordner<select id="fileCategory"><option value="golf">⛳ Golf</option><option value="handball">🤾 Handball</option><option value="klavier">🎹 Klavier</option><option value="gesang">🎤 Gesang & Chor</option><option value="schule">🏫 Schule</option><option value="schach">♟️ Schach</option><option value="sonstiges">📌 Sonstiges</option></select></label>
+<label class="field">Mit Termin verknüpfen (freiwillig)<select id="fileEvent"><option value="">Kein Termin</option></select></label>
+</div>
+<p><button type="submit">📥 Dokument speichern</button></p>
+</form>
+<p id="fileStatus" role="status" aria-live="polite"></p>
+<div class="form"><label class="field">Dokumente anzeigen<select id="fileFilter"><option value="alle">Alle Ordner</option><option value="golf">⛳ Golf</option><option value="handball">🤾 Handball</option><option value="klavier">🎹 Klavier</option><option value="gesang">🎤 Gesang & Chor</option><option value="schule">🏫 Schule</option><option value="schach">♟️ Schach</option><option value="sonstiges">📌 Sonstiges</option></select></label></div>
+<div id="fileList" class="files-grid" aria-live="polite"></div>
+<p class="muted">Maximal 15 MB pro Datei. Zum Öffnen brauchst du ein passendes Programm; PDFs und Bilder kann der Browser meistens direkt anzeigen. Sichere wichtige Originaldateien zusätzlich außerhalb der App. Im privaten Browsermodus oder beim Löschen von Browserdaten können diese Kopien verschwinden.</p>
+</section>
+<p class="muted">🔒 Feste Termine werden nicht automatisch verschoben. Bearbeiten und Löschen sind bewusst möglich. Diese Version hat noch keine Benutzerkonten oder echte Zugriffssperre. Die Daten liegen nur in diesem Browser.</p>
+</div>
+<script>
+'use strict';
+// Schul-Dokumente im bestehenden Smart-Files-Bereich ablegen.
+document.getElementById('schoolUpload').addEventListener('click',()=>{
+  document.querySelector('[data-panel="files"]').click();
+  document.getElementById('fileCategory').value='schule';
+  document.getElementById('fileInput').focus();
+});
+// Besondere Tage: lokal gespeichert, keine Server- oder Mailverbindung.
+const specialKey='my-smart-week-special-v1';
+let specialItems=[];
+try { specialItems=JSON.parse(localStorage.getItem(specialKey)||'[]'); if(!Array.isArray(specialItems)) specialItems=[]; } catch { specialItems=[]; }
+function renderSpecial(){
+ const box=document.getElementById('specialList');box.replaceChildren();
+ const sorted=[...specialItems].sort((a,b)=>a.date.localeCompare(b.date));
+ if(!sorted.length){const p=document.createElement('p');p.textContent='Noch keine besonderen Tage eingetragen.';box.append(p);return;}
+ sorted.forEach(item=>{const row=document.createElement('div');row.className='listrow';
+ const label=document.createElement('span');const [y,m,d]=item.date.split('-');label.textContent=`🎁 ${item.name} – ${d}.${m}.${y} (${item.repeat==='yearly'?'jedes Jahr':'einmalig'}) `;
+ const del=document.createElement('button');del.type='button';del.className='danger';del.textContent='Löschen';del.addEventListener('click',()=>{specialItems=specialItems.filter(x=>x.id!==item.id);localStorage.setItem(specialKey,JSON.stringify(specialItems));renderSpecial()});
+ row.append(label,del);box.append(row);
+ });
+}
+document.getElementById('specialForm').addEventListener('submit',e=>{e.preventDefault();
+ const name=document.getElementById('specialName').value.trim(),date=document.getElementById('specialDate').value,repeat=document.getElementById('specialRepeat').value;
+ if(!name||!date)return;
+ specialItems.push({id:Date.now()+'-'+Math.random(),name,date,repeat});
+ try{localStorage.setItem(specialKey,JSON.stringify(specialItems));document.getElementById('specialStatus').textContent='Gespeichert!';e.target.reset();renderSpecial();}catch{specialItems.pop();document.getElementById('specialStatus').textContent='Speichern nicht möglich. Bitte Browser-Speicher prüfen.'}
+});
+renderSpecial();
+
+// Die Navigation verändert nur sichtbare Bereiche. Bestehende Funktionen bleiben erhalten.
+document.querySelectorAll('.navtile').forEach(tile=>{
+  tile.addEventListener('click',()=>{
+    const target=tile.dataset.panel;
+    document.querySelectorAll('.navtile').forEach(btn=>{
+      const active=btn===tile;
+      btn.classList.toggle('active',active);
+      btn.setAttribute('aria-pressed',String(active));
+    });
+    document.querySelectorAll('.panel').forEach(section=>{
+      section.hidden=section.dataset.section!==target;
+    });
+  });
+});
+
+const days=['Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag','Sonntag'];
+const key='my-smart-week-v3';
+const categories={schule:['🏫 Schule','#1d4ed8','#dbeafe'],golf:['⛳ Golf','#166534','#dcfce7'],handball:['🤾 Handball','#9a3412','#ffedd5'],klavier:['🎹 Klavier','#6b21a8','#f3e8ff'],gesang:['🎤 Gesang & Chor','#9d174d','#fce7f3'],schach:['♟️ Schach','#115e59','#ccfbf1'],sonstiges:['📌 Sonstiges','#475569','#e2e8f0']};
+function guessCategory(name){const n=name.toLowerCase();if(n.includes('schule'))return 'schule';if(n.includes('golf'))return 'golf';if(n.includes('handball'))return 'handball';if(n.includes('klavier'))return 'klavier';if(n.includes('gesang')||n.includes('chor'))return 'gesang';if(n.includes('schach'))return 'schach';return 'sonstiges';}
+function categoryOf(e){return categories[e.category]?e.category:guessCategory(e.name)}
+function colorize(el,e){const c=categories[categoryOf(e)];el.style.setProperty('--category-color',c[1]);el.style.setProperty('--category-bg',c[2]);}
+const legend=document.getElementById('legend');for(const [id,c] of Object.entries(categories)){const chip=document.createElement('span');chip.textContent=c[0];chip.style.background=c[2];chip.style.color=c[1];legend.append(chip);}
+
+let events=[];let editing=null;let view='calendar';
+const $=id=>document.getElementById(id);
+function minutes(t){const [h,m]=t.split(':').map(Number);return h*60+m;}
+function overlap(a,b){return a.day===b.day && a.type!=='offen' && b.type!=='offen' && minutes(a.start)<minutes(b.end) && minutes(b.start)<minutes(a.end);}
+function uid(){return (typeof crypto!=='undefined' && crypto.randomUUID)?crypto.randomUUID():Date.now().toString(36)+Math.random().toString(36).slice(2);}
+function store(){try{localStorage.setItem(key,JSON.stringify(events));return true}catch(e){$('status').textContent='Speichern im Browser nicht möglich.';return false}}
+try{const data=JSON.parse(localStorage.getItem(key)||'[]');if(Array.isArray(data))events=data.filter(e=>e&&typeof e.id==='string'&&days.includes(e.day)&&/^\d\d:\d\d$/.test(e.start)&&/^\d\d:\d\d$/.test(e.end)&&['fest','flexibel','offen'].includes(e.type)&&typeof e.name==='string');}catch(e){events=[];}
+// Termine aus der Excel-Datei: nur bei leerem Kalender einsetzen.
+const excelStartEvents = [{"id": "excel-1", "day": "Montag", "start": "08:00", "end": "15:00", "name": "🏫 Schule", "type": "fest"}, {"id": "excel-2", "day": "Dienstag", "start": "08:00", "end": "15:00", "name": "🏫 Schule", "type": "fest"}, {"id": "excel-3", "day": "Mittwoch", "start": "08:00", "end": "15:00", "name": "🏫 Schule", "type": "fest"}, {"id": "excel-4", "day": "Donnerstag", "start": "08:00", "end": "15:00", "name": "🏫 Schule", "type": "fest"}, {"id": "excel-5", "day": "Freitag", "start": "08:00", "end": "13:00", "name": "🏫 Schule", "type": "fest"}, {"id": "excel-6", "day": "Montag", "start": "17:15", "end": "18:45", "name": "🤾 Handball D2 · Mün. Halle", "type": "fest"}, {"id": "excel-7", "day": "Mittwoch", "start": "16:00", "end": "16:30", "name": "🎤 Gesangunterricht", "type": "fest"}, {"id": "excel-8", "day": "Mittwoch", "start": "17:30", "end": "18:15", "name": "🎶 Jugendchor", "type": "fest"}, {"id": "excel-9", "day": "Donnerstag", "start": "17:00", "end": "18:30", "name": "🤾 Handball D2 · Kreiss. Halle", "type": "fest"}, {"id": "excel-10", "day": "Freitag", "start": "16:30", "end": "17:15", "name": "🎹 Klavier", "type": "fest"}, {"id": "excel-11", "day": "Freitag", "start": "18:30", "end": "19:30", "name": "♟️ Schach", "type": "fest"}, {"id": "excel-12", "day": "Samstag", "start": "15:00", "end": "16:00", "name": "⛳ Golf – mögliche Wintertraining-Zeit (Samstag)", "type": "offen"}, {"id": "excel-13", "day": "Sonntag", "start": "15:00", "end": "16:00", "name": "⛳ Golf – mögliche Wintertraining-Zeit (Sonntag)", "type": "offen"}];
+if (events.length === 0) {
+  events = excelStartEvents;
+  store();
+}
+// Korrektur: bestehende Schultermine aus dem vorherigen Import aktualisieren.
+// Andere oder selbst bearbeitete Termine bleiben unverändert.
+let schoolCorrected = false;
+for (const event of events) {
+  if (event.name === '🏫 Schule' && event.start === '08:15' && days.slice(0,5).includes(event.day)) {
+    event.start = '08:00';
+    schoolCorrected = true;
+  }
+}
+if (schoolCorrected) store();
+function reset(){editing=null;$('eventForm').reset();$('save').textContent='Termin speichern';$('cancel').hidden=true;}
+$('eventForm').addEventListener('submit',e=>{e.preventDefault();const name=$('name').value.trim(),day=$('day').value,start=$('start').value,end=$('end').value,type=$('type').value;
+if(!name||!start||!end||minutes(start)>=minutes(end)){$('status').textContent='Bitte gültigen Namen und eine Endzeit nach der Startzeit eingeben.';return}
+const item={id:editing||uid(),name,day,start,end,type,category:$('category').value};
+if(editing){events=events.map(e=>e.id===editing?item:e)}else{events.push(item)}
+store();reset();render();$('status').textContent='Termin gespeichert!';});
+$('cancel').addEventListener('click',()=>{reset();$('status').textContent='Bearbeitung abgebrochen.'});
+function edit(id){const e=events.find(e=>e.id===id);if(!e)return;editing=id;$('name').value=e.name;$('day').value=e.day;$('start').value=e.start;$('end').value=e.end;$('type').value=e.type;$('category').value=categoryOf(e);$('save').textContent='Änderungen speichern';$('cancel').hidden=false;$('status').textContent='Du bearbeitest einen bestehenden Termin.';window.scrollTo({top:0,behavior:'smooth'});}
+function remove(id){const e=events.find(e=>e.id===id);if(!e)return;if(!confirm('Termin „'+e.name+'“ wirklich löschen?'))return;events=events.filter(e=>e.id!==id);store();if(editing===id)reset();render();}
+function node(tag,cls,txt){const el=document.createElement(tag);if(cls)el.className=cls;if(txt!==undefined)el.textContent=txt;return el;}
+function buttons(el,e){const editBtn=node('button','secondary','Bearbeiten');editBtn.type='button';editBtn.addEventListener('click',()=>edit(e.id));const delBtn=node('button','danger','Löschen');delBtn.type='button';delBtn.addEventListener('click',()=>remove(e.id));el.append(node('div'));el.append(editBtn,' ',delBtn);}
+function render(){const cal=$('calendar'),list=$('list'),warnings=$('warnings');cal.replaceChildren();list.replaceChildren();warnings.replaceChildren();const sorted=[...events].sort((a,b)=>days.indexOf(a.day)-days.indexOf(b.day)||a.start.localeCompare(b.start));const conflictIds=new Set();let count=0;
+for(let i=0;i<sorted.length;i++)for(let j=i+1;j<sorted.length;j++)if(overlap(sorted[i],sorted[j])){count++;conflictIds.add(sorted[i].id);conflictIds.add(sorted[j].id);const mins=Math.min(minutes(sorted[i].end),minutes(sorted[j].end))-Math.max(minutes(sorted[i].start),minutes(sorted[j].start));warnings.append(node('div','notice','⚠️ '+sorted[i].day+': '+sorted[i].name+' und '+sorted[j].name+' überschneiden sich '+mins+' Minuten.'));}
+if(!count)warnings.append(node('p','','✅ Keine Konflikte erkannt.'));
+for(const day of days){const column=node('div','day');column.append(node('strong','',day));for(const e of sorted.filter(e=>e.day===day)){const box=node('div','event '+e.type+(conflictIds.has(e.id)?' conflict':''));colorize(box,e);box.append(node('div','',e.start+'–'+e.end),node('div','',e.name),node('div','',e.type==='fest'?'🔒 Fest':e.type==='flexibel'?'🔄 Flexibel':'❔ Unbestätigt'));buttons(box,e);column.append(box)}cal.append(column)}
+for(const e of sorted){const row=node('div','listrow');colorize(row,e);row.append(node('strong','',e.day+' · '+e.start+'–'+e.end),node('div','',e.name+' · '+(e.type==='fest'?'🔒 Fest':e.type==='flexibel'?'🔄 Flexibel':'❔ Unbestätigt')+(conflictIds.has(e.id)?' ⚠️':'')));buttons(row,e);list.append(row)}
+cal.classList.toggle('hidden',view!=='calendar');list.classList.toggle('hidden',view!=='list');$('calendarBtn').className=view==='calendar'?'':'secondary';$('listBtn').className=view==='list'?'':'secondary';}
+$('calendarBtn').addEventListener('click',()=>{view='calendar';render()});$('listBtn').addEventListener('click',()=>{view='list';render()});render();
+
+// Smart Files 3.2: Dateien in IndexedDB speichern (nicht in localStorage).
+const FILE_DB='my-smart-week-files-v1';
+function openFilesDb(){return new Promise((resolve,reject)=>{if(!('indexedDB' in window)){reject(new Error('Dieser Browser unterstützt die Dokumentenspeicherung nicht.'));return;}const request=indexedDB.open(FILE_DB,1);request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains('files'))db.createObjectStore('files',{keyPath:'id'});};request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);});}
+async function withFilesStore(mode,action){const db=await openFilesDb();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('files',mode);const req=action(tx.objectStore('files'));req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);tx.onerror=()=>reject(tx.error);});}finally{db.close();}}
+function refreshFileEvents(){const selector=$('fileEvent'),old=selector.value;selector.replaceChildren(new Option('Kein Termin',''));for(const e of [...events].sort((a,b)=>days.indexOf(a.day)-days.indexOf(b.day)||a.start.localeCompare(b.start))){selector.add(new Option(e.day+' · '+e.start+' · '+e.name,e.id));}if([...selector.options].some(o=>o.value===old))selector.value=old;}
+function renderActivities(){
+  for(const category of ['handball','klavier','gesang','schach']){
+    const target=$('activity-'+category);target.replaceChildren();
+    const matches=events.filter(e=>categoryOf(e)===category).sort((a,b)=>days.indexOf(a.day)-days.indexOf(b.day)||a.start.localeCompare(b.start));
+    if(!matches.length){target.append(node('p','muted','Noch keine Termine. Füge sie im Kalender hinzu.'));continue;}
+    for(const e of matches){const item=node('div','listrow');colorize(item,e);item.append(node('strong','',e.day+' · '+e.start+'–'+e.end),node('div','',e.name+' · '+(e.type==='fest'?'🔒 Fest':e.type==='flexibel'?'🔄 Flexibel':'❔ Unbestätigt')));target.append(item);}
+  }
+}
+const renderOriginal=render;
+render=function(){renderOriginal();refreshFileEvents();renderActivities();};
+function fileStatus(message){$('fileStatus').textContent=message;}
+$('fileForm').addEventListener('submit',async event=>{event.preventDefault();const file=$('fileInput').files[0];if(!file)return;if(file.size>15*1024*1024){fileStatus('⚠️ Die Datei ist größer als 15 MB. Bitte wähle eine kleinere Datei.');return;}const ext=file.name.split('.').pop().toLowerCase();if(!['pdf','doc','docx','xls','xlsx','jpg','jpeg','png','webp','txt'].includes(ext)){fileStatus('⚠️ Dieses Dateiformat ist noch nicht erlaubt.');return;}try{await withFilesStore('readwrite',store=>store.put({id:uid(),name:file.name,category:$('fileCategory').value,eventId:$('fileEvent').value,created:Date.now(),blob:file}));$('fileForm').reset();fileStatus('✅ Dokument lokal gespeichert!');await renderFiles();}catch(err){fileStatus('⚠️ Speichern fehlgeschlagen. Möglicherweise ist der Browserspeicher voll oder gesperrt.');}});
+$('fileFilter').addEventListener('change',renderFiles);
+async function renderFiles(){const root=$('fileList');root.replaceChildren();let docs;try{docs=await withFilesStore('readonly',store=>store.getAll());}catch(err){root.append(node('p','muted','Dokumentenspeicherung ist in diesem Browser nicht verfügbar.'));return;}docs.sort((a,b)=>b.created-a.created);const filter=$('fileFilter').value;docs=docs.filter(d=>filter==='alle'||d.category===filter);if(!docs.length){root.append(node('p','muted','Noch keine Dokumente in diesem Ordner.'));return;}for(const doc of docs){const item=node('article','fileitem');item.append(node('strong','',doc.name));const cat=categories[doc.category]||categories.sonstiges;item.append(node('p','filemeta',cat[0]+' · '+new Date(doc.created).toLocaleDateString('de-DE')+' · '+(doc.blob.size/1024/1024).toFixed(2)+' MB'));const linked=events.find(e=>e.id===doc.eventId);if(linked)item.append(node('p','filemeta','📅 '+linked.day+' · '+linked.name));const actions=node('div','fileactions');const open=node('button','secondary','📄 Öffnen');open.type='button';open.addEventListener('click',()=>{const url=URL.createObjectURL(doc.blob);const a=document.createElement('a');a.href=url;a.download=doc.name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);fileStatus('Datei wurde zum Öffnen oder Herunterladen bereitgestellt.');});const del=node('button','danger','🗑️ Löschen');del.type='button';del.addEventListener('click',async()=>{if(!confirm('Dokument „'+doc.name+'“ wirklich aus Smart Files löschen?'))return;try{await withFilesStore('readwrite',store=>store.delete(doc.id));fileStatus('Dokument gelöscht.');await renderFiles();}catch(err){fileStatus('Löschen fehlgeschlagen.');}});actions.append(open,del);item.append(actions);root.append(item);}}
+refreshFileEvents();renderActivities();renderFiles();
+// Meine Clips: separate IndexedDB; bestehende Dokumente bleiben unverändert.
+const CLIP_DB='my-smart-week-clips-v1';
+function openClipDb(){return new Promise((resolve,reject)=>{if(!window.indexedDB)return reject(new Error('Nicht verfügbar'));const r=indexedDB.open(CLIP_DB,1);r.onupgradeneeded=()=>r.result.createObjectStore('clips',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+async function clipStore(mode,callback){const db=await openClipDb();try{return await new Promise((resolve,reject)=>{const tx=db.transaction('clips',mode);const req=callback(tx.objectStore('clips'));req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);tx.onerror=()=>reject(tx.error);});}finally{db.close();}}
+const clipList=document.getElementById('clipList'),clipStatus=document.getElementById('clipStatus');
+let clipUrl=null;
+function clearClipUrl(){if(clipUrl){URL.revokeObjectURL(clipUrl);clipUrl=null;}}
+async function renderClips(){clearClipUrl();clipList.replaceChildren();let clips;try{clips=await clipStore('readonly',s=>s.getAll());}catch{clipStatus.textContent='Videospeicher ist in diesem Browser nicht verfügbar.';return;}const filter=document.getElementById('clipFilter').value;clips=clips.filter(c=>filter==='alle'||c.category===filter).sort((a,b)=>b.created-a.created);if(!clips.length){clipList.append(node('p','muted','Noch keine Clips in dieser Kategorie.'));return;}for(const c of clips){const item=node('article','fileitem');item.append(node('strong','',c.title||c.name));item.append(node('p','filemeta',(categories[c.category]?.[0]||'🎬 Sonstiges')+' · '+new Date(c.created).toLocaleDateString('de-DE')+' · '+(c.blob.size/1024/1024).toFixed(1)+' MB'));const actions=node('div','fileactions');const play=node('button','secondary','▶️ Abspielen');play.type='button';play.addEventListener('click',()=>{clearClipUrl();clipList.querySelectorAll('video').forEach(v=>v.remove());clipUrl=URL.createObjectURL(c.blob);const video=document.createElement('video');video.controls=true;video.playsInline=true;video.preload='metadata';video.src=clipUrl;video.style.cssText='display:block;width:100%;max-width:680px;margin-top:12px;border-radius:12px';video.setAttribute('aria-label',c.title||c.name);item.append(video);video.play().catch(()=>{});});const del=node('button','danger','🗑️ Löschen');del.type='button';del.addEventListener('click',async()=>{if(!confirm('Clip wirklich aus der App löschen?'))return;try{await clipStore('readwrite',s=>s.delete(c.id));await renderClips();clipStatus.textContent='Clip gelöscht.';}catch{clipStatus.textContent='Löschen fehlgeschlagen.';}});actions.append(play,del);item.append(actions);clipList.append(item);}}
+document.getElementById('clipForm').addEventListener('submit',async e=>{e.preventDefault();const f=document.getElementById('clipInput').files[0];if(!f)return;if(f.size>80*1024*1024){clipStatus.textContent='⚠️ Das Video ist größer als 80 MB. Bitte kürze es zuerst.';return;}if(!f.type.startsWith('video/')&&!/\.(mp4|mov|webm|m4v)$/i.test(f.name)){clipStatus.textContent='⚠️ Bitte eine Videodatei auswählen.';return;}try{await clipStore('readwrite',s=>s.put({id:Date.now()+'-'+Math.random(),name:f.name,title:document.getElementById('clipTitle').value.trim()||f.name,category:document.getElementById('clipCategory').value,created:Date.now(),blob:f}));e.target.reset();clipStatus.textContent='✅ Clip gespeichert!';await renderClips();}catch{clipStatus.textContent='⚠️ Speichern nicht möglich. Eventuell reicht der Browserspeicher nicht.';}});
+document.getElementById('clipFilter').addEventListener('change',renderClips);
+renderClips();
+
+// Smart Mail 3.7: bewusst offline und regelbasiert; kein Gmail-Zugriff.
+const MAIL_KEY='my-smart-week-mail-tests-v1';
+let mailItems=[];
+try{mailItems=JSON.parse(localStorage.getItem(MAIL_KEY)||'[]');if(!Array.isArray(mailItems))mailItems=[];}catch{mailItems=[];}
+const mailLabels={important:'✅ Wichtig',review:'❔ Prüfen',ads:'🏷️ Mögliche Werbung'};
+function classifyMail(sender,subject,body){
+ const all=(sender+' '+subject+' '+body).toLocaleLowerCase('de-DE');
+ const groups=[['Schule',/schule|lehrer|elternbrief|unterricht|klassenfahrt|elternabend|zeugnis|hausaufgabe/],['Golf',/golf|turnier|abschlag|golftrainer|bwgv|handicap/],['Handball',/handball|spieltag|handballtraining/],['Musik',/klavier|chor|gesang|konzert|musikschule/],['Schach',/schach|schachturnier/],['Besondere Tage',/geburtstag|einladung|familienfeier/]];
+ const found=groups.filter(g=>g[1].test(all)).map(g=>g[0]);
+ const ads=/rabatt|sonderangebot|gutschein|sale\b|jetzt kaufen|newsletter|% sparen|werbeaktion|discount/;
+ const important=/wichtig|termin|training|turnier|unterricht|einladung|information|änderung|absage|anmeldung|prüfung|elternbrief/;
+ if(ads.test(all) && !/termin|turnier|training|elternbrief|einladung|anmeldung|spieltag|absage/.test(all))return {bucket:'ads',group:found[0]||'Sonstiges',reason:'Werbe-Stichwörter gefunden. Nicht automatisch löschen.'};
+ if(found.length)return {bucket:'important',group:found[0],reason:'Stichwörter zu '+found.join(', ')+' gefunden. Bitte selbst prüfen.'};
+ if(ads.test(all))return {bucket:'review',group:found[0]||'Sonstiges',reason:'Werbung und mögliche Termininformation gemischt: bitte prüfen.'};
+ if(important.test(all))return {bucket:'review',group:'Sonstiges',reason:'Möglicherweise ein Termin oder eine wichtige Information.'};
+ return {bucket:'review',group:'Sonstiges',reason:'Nicht eindeutig zugeordnet. Bitte selbst prüfen.'};
+}
+function mailEl(tag,txt,cls){const e=document.createElement(tag);if(cls)e.className=cls;e.textContent=txt;return e;}
+function saveMail(){try{localStorage.setItem(MAIL_KEY,JSON.stringify(mailItems));return true;}catch{return false;}}
+function renderMail(){
+ const counts=document.getElementById('mailCounts');if(counts){counts.replaceChildren();for(const key of ['important','review','ads'])counts.append(mailEl('span',mailLabels[key]+': '+mailItems.filter(x=>x.bucket===key).length));}
+ const root=document.getElementById('mailList');root.replaceChildren();const filter=document.getElementById('mailFilter').value;
+ const items=mailItems.filter(x=>filter==='all'||x.bucket===filter);
+ if(!items.length){root.append(mailEl('p','Noch keine Test-Nachrichten in diesem Bereich.','muted'));return;}
+ for(const x of items){const row=mailEl('article','','fileitem');row.append(mailEl('strong',mailLabels[x.bucket]+' · '+x.subject));row.append(mailEl('p',(x.sender||'Absender unbekannt')+' · '+x.group+' · '+new Date(x.created).toLocaleDateString('de-DE'),'filemeta'));
+ row.append(mailEl('p',x.reason,'muted'));const actions=mailEl('div','','fileactions');
+ const details=mailEl('button','📖 Anzeigen','secondary');details.type='button';details.addEventListener('click',()=>{const d=mailEl('pre',x.body||'(kein Nachrichtentext)');d.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;background:#f1f5f9;padding:10px;border-radius:8px';row.querySelector('pre')?.remove();row.append(d);});
+ const change=mailEl('button','🔁 Kategorie ändern','secondary');change.type='button';change.addEventListener('click',()=>{const seq=['important','review','ads'];x.bucket=seq[(seq.indexOf(x.bucket)+1)%3];x.reason='Manuell von dir eingeordnet.';if(saveMail())renderMail();else document.getElementById('mailStatus').textContent='Speichern fehlgeschlagen.';});
+ const del=mailEl('button','🗑️ Testeintrag löschen','danger');del.type='button';del.addEventListener('click',()=>{if(!confirm('Diesen lokalen Testeintrag löschen?'))return;const old=[...mailItems];mailItems=mailItems.filter(i=>i.id!==x.id);if(!saveMail()){mailItems=old;document.getElementById('mailStatus').textContent='Löschen fehlgeschlagen.';}renderMail();});
+ actions.append(details,change,del);row.append(actions);root.append(row);
+ }
+}
+const mailSamples=[
+ ['⛳ Golftraining','Golftrainer','Training am Samstag','Hallo! Am Samstag um 15:00 Uhr ist Golftraining auf dem Platz. Bitte anmelden.'],
+ ['🏫 Elternbrief','Klassenleitung','Elternbrief zum Schulfest','Liebe Eltern, das Schulfest findet am Freitag um 16:00 Uhr statt.'],
+ ['🤾 Handballspiel','Trainer','Handball-Spieltag','Unser nächstes Handballspiel beginnt am Sonntag um 10:00 Uhr.'],
+ ['🏷️ Werbung','Sportshop','Super Sale: 30 % Rabatt','Jetzt kaufen! Nur heute: Gutschein und Sonderangebot auf Sportschuhe.'],
+ ['❔ Unklar','Unbekannt','Kurze Nachricht','Hallo, kannst du dich bitte bei mir melden?']
+];
+const sampleRoot=document.getElementById('mailSamples');
+mailSamples.forEach(([label,sender,subject,body])=>{const btn=mailEl('button',label);btn.type='button';btn.addEventListener('click',()=>{document.getElementById('mailSender').value=sender;document.getElementById('mailSubject').value=subject;document.getElementById('mailBody').value=body;document.getElementById('mailResult').replaceChildren(mailEl('p','Beispiel geladen – jetzt „Nachricht prüfen“ klicken.','hint'));});sampleRoot.append(btn);});
+document.getElementById('mailExample').addEventListener('click',()=>{
+ document.getElementById('mailSender').value='Golftrainer';document.getElementById('mailSubject').value='Information zum Golftraining';document.getElementById('mailBody').value='Hallo! Unser Golftraining findet am Samstag statt. Die genaue Uhrzeit geben wir noch bekannt. Viele Grüße!';
+});
+document.getElementById('mailForm').addEventListener('submit',async e=>{
+ e.preventDefault();const status=document.getElementById('mailStatus');const sender=document.getElementById('mailSender').value.trim();const subject=document.getElementById('mailSubject').value.trim();let body=document.getElementById('mailBody').value.trim();const file=document.getElementById('mailFile').files[0];
+ if(file){if(file.size>100000){status.textContent='Bitte nur Textdateien bis 100 KB verwenden.';return;}if(!/\.txt$/i.test(file.name)){status.textContent='Bitte eine .txt-Datei auswählen.';return;}try{body=(body+'\n'+await file.text()).trim().slice(0,15000);}catch{status.textContent='Textdatei konnte nicht gelesen werden.';return;}}
+ if(!subject){status.textContent='Bitte einen Betreff eingeben.';return;}
+ const result=classifyMail(sender,subject,body);const item={id:Date.now()+'-'+Math.random(),sender,subject,body,created:Date.now(),...result};mailItems.unshift(item);
+ if(!saveMail()){mailItems.shift();status.textContent='Speichern nicht möglich. Bitte Browser-Speicher prüfen.';return;}
+ document.getElementById('mailResult').replaceChildren(mailEl('p',mailLabels[result.bucket]+' – '+result.group+': '+result.reason,'mail-result'));
+ status.textContent='Testnachricht lokal gespeichert. Du kannst die Kategorie unten korrigieren.';e.target.reset();renderMail();
+});
+document.getElementById('mailFilter').addEventListener('change',renderMail);
+renderMail();
+</script></body></html>
