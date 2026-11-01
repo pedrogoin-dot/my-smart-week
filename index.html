@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Smart Week 3.9 – Kontrast-Update</title>
+<title>My Smart Week 4.1 – Smart Mail Terminassistent</title>
 <style>
 :root{font-family:Arial,sans-serif;color:#23334d;background:#eaf4ff}*{box-sizing:border-box}body{margin:0;padding:18px}.app{max-width:1050px;margin:auto}header{text-align:center}h1{color:#2456a6}.card{background:white;padding:20px;border-radius:16px;margin:16px 0;box-shadow:0 4px 12px #0001}.form{display:flex;flex-wrap:wrap;gap:10px}.field{display:flex;flex-direction:column;gap:5px;flex:1 1 140px}input,select,button{padding:10px;border-radius:9px;border:1px solid #c9d5e4;font-size:15px}button{background:#2456a6;color:white;cursor:pointer}button.secondary{background:#e9f1ff;color:#2456a6}button.danger{background:#a33232}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #80b7ff}button:disabled{opacity:.5;cursor:not-allowed}.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.day{background:#f1f6ff;padding:9px;border-radius:10px;min-height:110px;overflow-wrap:anywhere}.event{background:white;border-left:4px solid #4385e5;padding:8px;margin:7px 0;border-radius:8px;font-size:13px}.event.fest{border-left-color:#ef9b20}.event.offen{border-left-color:#9298a2;border-left-style:dashed}.event.conflict{outline:2px solid #d34848}.event button,.listrow button{font-size:12px;padding:5px 7px;margin-top:5px}.listrow{padding:12px;border-bottom:1px solid #ddd}.hidden{display:none}.notice{background:#fff3dd;padding:10px;border-radius:9px;margin:8px 0}.muted{color:#586b85;font-size:13px}.status{min-height:20px}@media(max-width:750px){.days{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.days{grid-template-columns:1fr}}
 
@@ -71,10 +71,20 @@ input,select,textarea{border:2px solid #647c9f;background:#fff;color:#142943}
 .mail-test-grid button:hover{background:#dfccff}
 @media(max-width:650px){.app>header{border-radius:14px}.navtile{min-height:105px;padding:12px 6px}.navtile strong{font-size:13px}button:not(.navtile){min-height:44px}}
 @media(hover:none){.navtile:hover{background:var(--tint);border-width:2px;box-shadow:0 4px 12px #102c5225}.navtile:active{background:#fff;transform:scale(.96)}}
+/* 4.0: Sichtbare, überprüfbare Terminvorschläge */
+.mail-appointment:not(:empty){border:2px solid #0f766e;background:#ecfdf5;border-radius:14px;padding:14px;margin:12px 0}
+.mail-appointment h3{margin-top:0;color:#115e59}
+.mail-appointment .form{margin:10px 0}
+.mail-appointment .field{min-width:120px}
+.mail-appointment .mail-warning{color:#854d0e;background:#fef3c7;padding:10px;border-radius:9px}
+/* 4.1: Neue, aus Smart Mail übernommene Termine deutlich hervorheben */
+.event.mail-new,.listrow.mail-new{background:#b9f4e6!important;border:3px solid #087f69!important;border-left:9px solid #065f46!important;color:#063c33!important;box-shadow:0 0 0 2px #ffffff,0 4px 12px #064e3b35}
+.mail-new .mail-new-label{display:inline-block;background:#065f46;color:#fff;font-size:12px;font-weight:800;letter-spacing:.02em;padding:5px 8px;border-radius:7px;margin:5px 0}
+.mail-new>div:nth-child(2){font-weight:800}
 </style>
 </head>
 <body><div class="app">
-<header><h1>🚀 My Smart Week 3.9</h1><p>📚 Mit deinem Wochenplan 2026/27</p><p>Mein Wochenassistent 🤖</p></header>
+<header><h1>🚀 My Smart Week 4.1</h1><p>📚 Mit deinem Wochenplan 2026/27</p><p>Mein Wochenassistent 🤖</p></header>
 <nav class="navgrid" aria-label="Hauptmenü">
 <button class="navtile active" type="button" data-panel="home" style="--tile:#2563eb;--tint:#dbeafe" aria-pressed="true"><span class="symbol">🏠</span><strong>Startseite</strong></button>
 <button class="navtile" type="button" data-panel="calendar" style="--tile:#0d9488;--tint:#ccfbf1" aria-pressed="false"><span class="symbol">📅</span><strong>Kalender</strong></button>
@@ -96,13 +106,13 @@ input,select,textarea{border:2px solid #647c9f;background:#fff;color:#142943}
 <section class="card panel" data-section="school" hidden><h2>🏫 Meine Schule</h2><p>Elternbriefe, Informationsblätter, Einladungen und Stundenpläne sammeln.</p><button type="button" id="schoolUpload">📎 Schul-Dokument hinzufügen</button><p class="muted">Du gelangst zu Smart Files. Der Ordner „Schule“ wird automatisch ausgewählt. Ein Dokument erzeugt nicht ohne deine Zustimmung einen Kalendereintrag.</p></section>
 <section class="card panel" data-section="special" hidden><h2>🎁 Besondere Tage</h2><p>Geburtstage und besondere Ereignisse. Geburtstage wiederholen sich jedes Jahr.</p><form id="specialForm" class="form"><label class="field">Ereignis<input id="specialName" required maxlength="90" placeholder="z. B. Geburtstag von Oma"></label><label class="field">Datum<input id="specialDate" type="date" required></label><label class="field">Wiederholung<select id="specialRepeat"><option value="yearly">Jedes Jahr</option><option value="once">Nur einmal</option></select></label><div class="field"><span>&nbsp;</span><button type="submit">🎁 Speichern</button></div></form><p id="specialStatus" role="status"></p><div id="specialList"></div><p class="muted">Diese Einträge werden nur in diesem Browser gespeichert. Automatische Push-Erinnerungen gibt es noch nicht.</p></section>
 <section class="card panel" data-section="mail" hidden>
-<h2>📧 Smart Mail – Testlabor 3.8</h2>
+<h2>📧 Smart Mail – Terminassistent 4.0</h2>
 <div class="mail-lab"><strong>🧪 Chefentwickler-Challenge: 5 Testnachrichten</strong>
 <p class="muted">Tippe auf ein Beispiel, überprüfe den Vorschlag und klicke auf „Nachricht prüfen“. Du kannst den Text vorher verändern. Alle Beispiele sind erfunden.</p>
 <div class="mail-test-grid" id="mailSamples"></div>
 <div class="mail-counts" id="mailCounts" aria-live="polite"></div>
 </div>
-<p>Füge eine <strong>Test-E-Mail</strong> ein oder importiere eine <strong>.txt</strong>-Datei. Smart Mail sortiert sie mit einfachen Stichwortregeln. Es liest dein Gmail-Postfach <strong>nicht</strong> und verwendet noch keine KI.</p>
+<p>Füge eine <strong>erfundene Test-E-Mail</strong> ein oder importiere eine <strong>.txt</strong>-Datei. Smart Mail sortiert Nachrichten und erkennt einfache Wochentage und Uhrzeiten. Du kannst erkannte Termine prüfen und selbst übernehmen. <strong>Keine Gmail-Verbindung, keine KI.</strong></p>
 <p class="hint">🔒 Nur lokale Verarbeitung in diesem Browser. Bitte zunächst erfundene Beispiele verwenden und keine persönlichen Daten von Mitschülern hochladen. Es werden keine Gmail-Nachrichten verschoben oder gelöscht.</p>
 <form id="mailForm"><div class="form">
 <label class="field">Absender (optional)<input id="mailSender" maxlength="150" placeholder="z. B. Golftrainer"></label>
@@ -110,9 +120,9 @@ input,select,textarea{border:2px solid #647c9f;background:#fff;color:#142943}
 <label class="field">Textdatei (.txt, optional)<input id="mailFile" type="file" accept=".txt,text/plain"></label>
 </div><label class="field">Nachrichtentext<textarea id="mailBody" rows="6" style="width:100%;min-height:120px" maxlength="15000" placeholder="Hier den Inhalt einer Testnachricht einfügen ..."></textarea></label>
 <p><button type="submit">🔎 Nachricht prüfen</button> <button type="button" class="secondary" id="mailExample">✨ Beispiel einsetzen</button></p></form>
-<p id="mailStatus" role="status" aria-live="polite"></p><div id="mailResult"></div>
+<p id="mailStatus" role="status" aria-live="polite"></p><div id="mailResult"></div><div id="mailAppointment" class="mail-appointment" aria-live="polite"></div>
 <h3>📬 Meine Test-Nachrichten</h3><label class="field">Anzeigen<select id="mailFilter"><option value="all">Alle</option><option value="important">✅ Wichtig</option><option value="review">❔ Prüfen</option><option value="ads">🏷️ Mögliche Werbung</option></select></label><div id="mailList"></div>
-<p class="muted">Diese Einträge werden lokal gespeichert. Stichwortregeln können sich irren. Termine werden nicht automatisch in den Kalender übernommen. Werbung wird niemals automatisch gelöscht.</p>
+<p class="muted">Diese Einträge werden lokal in diesem Browser gespeichert. Die Erkennung kann sich irren, insbesondere bei Datum, Uhrzeit und wiederkehrenden Terminen. Termine werden nur nach deiner Bestätigung übernommen. Werbung wird niemals automatisch gelöscht.</p>
 </section>
 <section class="card panel" data-section="golf" hidden><h2>⛳ Mein Golf</h2><p><strong>Handicap:</strong> 27,4 · <strong>Ziel nächste Saison:</strong> 10–15</p><p>Wintertraining: Samstag oder Sonntag noch offen. BWGV-Kadertermine noch nicht bekannt.</p><p class="muted">Ein ausführlicher Golf-Tracker kommt später. Golf-Termine bearbeitest du im Kalender.</p></section>
 <section class="card panel" data-section="handball" hidden><h2>🤾 Mein Handball</h2><p>Deine Handballtermine aus dem Kalender:</p><div id="activity-handball"></div></section>
@@ -240,8 +250,8 @@ function buttons(el,e){const editBtn=node('button','secondary','Bearbeiten');edi
 function render(){const cal=$('calendar'),list=$('list'),warnings=$('warnings');cal.replaceChildren();list.replaceChildren();warnings.replaceChildren();const sorted=[...events].sort((a,b)=>days.indexOf(a.day)-days.indexOf(b.day)||a.start.localeCompare(b.start));const conflictIds=new Set();let count=0;
 for(let i=0;i<sorted.length;i++)for(let j=i+1;j<sorted.length;j++)if(overlap(sorted[i],sorted[j])){count++;conflictIds.add(sorted[i].id);conflictIds.add(sorted[j].id);const mins=Math.min(minutes(sorted[i].end),minutes(sorted[j].end))-Math.max(minutes(sorted[i].start),minutes(sorted[j].start));warnings.append(node('div','notice','⚠️ '+sorted[i].day+': '+sorted[i].name+' und '+sorted[j].name+' überschneiden sich '+mins+' Minuten.'));}
 if(!count)warnings.append(node('p','','✅ Keine Konflikte erkannt.'));
-for(const day of days){const column=node('div','day');column.append(node('strong','',day));for(const e of sorted.filter(e=>e.day===day)){const box=node('div','event '+e.type+(conflictIds.has(e.id)?' conflict':''));colorize(box,e);box.append(node('div','',e.start+'–'+e.end),node('div','',e.name),node('div','',e.type==='fest'?'🔒 Fest':e.type==='flexibel'?'🔄 Flexibel':'❔ Unbestätigt'));buttons(box,e);column.append(box)}cal.append(column)}
-for(const e of sorted){const row=node('div','listrow');colorize(row,e);row.append(node('strong','',e.day+' · '+e.start+'–'+e.end),node('div','',e.name+' · '+(e.type==='fest'?'🔒 Fest':e.type==='flexibel'?'🔄 Flexibel':'❔ Unbestätigt')+(conflictIds.has(e.id)?' ⚠️':'')));buttons(row,e);list.append(row)}
+for(const day of days){const column=node('div','day');column.append(node('strong','',day));for(const e of sorted.filter(e=>e.day===day)){const box=node('div','event '+e.type+(conflictIds.has(e.id)?' conflict':'')+(e.mailSourceId?' mail-new':''));colorize(box,e);if(e.mailSourceId)box.append(node('div','mail-new-label','📧 NEU AUS SMART MAIL'));box.append(node('div','',e.start+'–'+e.end),node('div','',e.name),node('div','',e.type==='fest'?'🔒 Fest':e.type==='flexibel'?'🔄 Flexibel':'❔ Unbestätigt'));buttons(box,e);column.append(box)}cal.append(column)}
+for(const e of sorted){const row=node('div','listrow'+(e.mailSourceId?' mail-new':''));colorize(row,e);if(e.mailSourceId)row.append(node('div','mail-new-label','📧 NEU AUS SMART MAIL'));row.append(node('strong','',e.day+' · '+e.start+'–'+e.end),node('div','',e.name+' · '+(e.type==='fest'?'🔒 Fest':e.type==='flexibel'?'🔄 Flexibel':'❔ Unbestätigt')+(conflictIds.has(e.id)?' ⚠️':'')));buttons(row,e);list.append(row)}
 cal.classList.toggle('hidden',view!=='calendar');list.classList.toggle('hidden',view!=='list');$('calendarBtn').className=view==='calendar'?'':'secondary';$('listBtn').className=view==='list'?'':'secondary';}
 $('calendarBtn').addEventListener('click',()=>{view='calendar';render()});$('listBtn').addEventListener('click',()=>{view='list';render()});render();
 
@@ -302,13 +312,66 @@ function renderMail(){
  const items=mailItems.filter(x=>filter==='all'||x.bucket===filter);
  if(!items.length){root.append(mailEl('p','Noch keine Test-Nachrichten in diesem Bereich.','muted'));return;}
  for(const x of items){const row=mailEl('article','','fileitem');row.append(mailEl('strong',mailLabels[x.bucket]+' · '+x.subject));row.append(mailEl('p',(x.sender||'Absender unbekannt')+' · '+x.group+' · '+new Date(x.created).toLocaleDateString('de-DE'),'filemeta'));
- row.append(mailEl('p',x.reason,'muted'));const actions=mailEl('div','','fileactions');
+ row.append(mailEl('p',x.reason,'muted'));const actions=mailEl('div','','fileactions');const propose=mailEl('button','📅 Terminvorschlag','secondary');propose.type='button';propose.addEventListener('click',()=>{showMailAppointment(x);document.getElementById('mailAppointment').scrollIntoView({behavior:'smooth',block:'center'});});actions.append(propose);
  const details=mailEl('button','📖 Anzeigen','secondary');details.type='button';details.addEventListener('click',()=>{const d=mailEl('pre',x.body||'(kein Nachrichtentext)');d.style.cssText='white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;background:#f1f5f9;padding:10px;border-radius:8px';row.querySelector('pre')?.remove();row.append(d);});
  const change=mailEl('button','🔁 Kategorie ändern','secondary');change.type='button';change.addEventListener('click',()=>{const seq=['important','review','ads'];x.bucket=seq[(seq.indexOf(x.bucket)+1)%3];x.reason='Manuell von dir eingeordnet.';if(saveMail())renderMail();else document.getElementById('mailStatus').textContent='Speichern fehlgeschlagen.';});
  const del=mailEl('button','🗑️ Testeintrag löschen','danger');del.type='button';del.addEventListener('click',()=>{if(!confirm('Diesen lokalen Testeintrag löschen?'))return;const old=[...mailItems];mailItems=mailItems.filter(i=>i.id!==x.id);if(!saveMail()){mailItems=old;document.getElementById('mailStatus').textContent='Löschen fehlgeschlagen.';}renderMail();});
  actions.append(details,change,del);row.append(actions);root.append(row);
  }
 }
+// 4.0: Nur einfache, ausdrücklich genannte Wochentage und Uhrzeiten vorschlagen.
+// Keine automatische Kalenderänderung und kein Gmail-Zugriff.
+function suggestMailAppointment(subject,body){
+ const content=subject+' '+body;
+ const dayMatch=content.match(/\b(Montag|Dienstag|Mittwoch|Donnerstag|Freitag|Samstag|Sonntag)s?\b/i);
+ const timeMatch=content.match(/\b(?:um\s+|ab\s+|Beginn\s*:?\s*)([01]?\d|2[0-3])(?:[:.]([0-5]\d))?\s*(?:Uhr)?\b/i);
+ if(!dayMatch||!timeMatch)return null;
+ const day=days.find(d=>d.toLowerCase()===dayMatch[1].toLowerCase());
+ const hour=Number(timeMatch[1]),minute=Number(timeMatch[2]||'0');
+ const start=String(hour).padStart(2,'0')+':'+String(minute).padStart(2,'0');
+ const finish=hour*60+minute+60;
+ const end=String(Math.floor(Math.min(finish,1439)/60)).padStart(2,'0')+':'+String(Math.min(finish,1439)%60).padStart(2,'0');
+ if(!day||finish>=1440)return null;
+ return {day,start,end};
+}
+function showMailAppointment(item){
+ const target=document.getElementById('mailAppointment');target.replaceChildren();
+ const proposal=suggestMailAppointment(item.subject,item.body);
+ if(!proposal){target.append(mailEl('p','🔎 Kein eindeutiger Wochentag mit Uhrzeit gefunden. Du kannst den Termin weiterhin manuell im Kalender eintragen.','hint'));return;}
+ target.append(mailEl('h3','📅 Terminvorschlag – bitte kontrollieren'));
+ target.append(mailEl('p','Aus dieser Testnachricht wurde ein möglicher Termin erkannt. Die Dauer von 60 Minuten ist nur ein Vorschlag.'));
+ const form=document.createElement('form');form.className='form';
+ function field(labelText,type,value,options){
+  const label=document.createElement('label');label.className='field';label.append(document.createTextNode(labelText));
+  const control=document.createElement(options?'select':'input');
+  if(options){for(const option of options)control.add(new Option(option,option));control.value=value;}
+  else {control.type=type;control.value=value;control.required=true;}
+  label.append(control);form.append(label);return control;
+ }
+ const name=field('Terminname','text',item.subject.slice(0,100));name.maxLength=100;
+ const day=field('Wochentag',null,proposal.day,days);
+ const start=field('Beginn','time',proposal.start);
+ const end=field('Ende','time',proposal.end);
+ const category=field('Aktivität',null,({'Golf':'golf','Handball':'handball','Musik':'gesang','Schach':'schach','Schule':'schule'}[item.group]||'sonstiges'),Object.keys(categories));
+ // Anzeigenamen in Auswahl; Werte sind interne Kategorie-IDs.
+ [...category.options].forEach(o=>o.textContent=categories[o.value][0]);
+ const note=mailEl('p','⚠️ Bitte Tag, Uhrzeit und Dauer prüfen. Unser Kalender ist ein wiederkehrender Wochenplan; einzelne Daten werden noch nicht unterstützt.','mail-warning');
+ const save=mailEl('button','✅ Geprüften Termin übernehmen');save.type='submit';
+ form.append(save);target.append(note,form);
+ form.addEventListener('submit',event=>{
+  event.preventDefault();
+  if(!name.value.trim()||minutes(start.value)>=minutes(end.value)){alert('Bitte gültige Zeiten und einen Namen eingeben.');return;}
+  const sameSource=events.some(e=>e.mailSourceId===item.id&&e.day===day.value&&e.start===start.value&&e.end===end.value);
+  if(sameSource){target.replaceChildren(mailEl('p','ℹ️ Dieser Termin wurde aus dieser Nachricht bereits übernommen. Öffne den Kalender, um ihn zu prüfen.','hint'));return;}
+  const sameSlot=events.some(e=>e.day===day.value&&e.start===start.value&&e.end===end.value&&e.name.trim().toLocaleLowerCase('de-DE')===name.value.trim().toLocaleLowerCase('de-DE'));
+  if(sameSlot&&!confirm('Ein Termin mit gleichem Namen, Wochentag und Uhrzeit ist bereits vorhanden. Trotzdem einen weiteren Eintrag anlegen?'))return;
+  if(!confirm('Diesen Termin wirklich in den wiederkehrenden Wochenkalender übernehmen?'))return;
+  events.push({id:uid(),name:name.value.trim(),day:day.value,start:start.value,end:end.value,type:'offen',category:category.value,mailSourceId:item.id});
+  if(!store()){events.pop();return;}
+  render();target.replaceChildren(mailEl('p','✅ Neuer Smart-Mail-Termin als „Unbestätigt“ übernommen und türkis markiert. Öffne den Kalender, um ihn zu prüfen.','mail-result'));
+ });
+}
+
 const mailSamples=[
  ['⛳ Golftraining','Golftrainer','Training am Samstag','Hallo! Am Samstag um 15:00 Uhr ist Golftraining auf dem Platz. Bitte anmelden.'],
  ['🏫 Elternbrief','Klassenleitung','Elternbrief zum Schulfest','Liebe Eltern, das Schulfest findet am Freitag um 16:00 Uhr statt.'],
@@ -328,7 +391,7 @@ document.getElementById('mailForm').addEventListener('submit',async e=>{
  const result=classifyMail(sender,subject,body);const item={id:Date.now()+'-'+Math.random(),sender,subject,body,created:Date.now(),...result};mailItems.unshift(item);
  if(!saveMail()){mailItems.shift();status.textContent='Speichern nicht möglich. Bitte Browser-Speicher prüfen.';return;}
  document.getElementById('mailResult').replaceChildren(mailEl('p',mailLabels[result.bucket]+' – '+result.group+': '+result.reason,'mail-result'));
- status.textContent='Testnachricht lokal gespeichert. Du kannst die Kategorie unten korrigieren.';e.target.reset();renderMail();
+ status.textContent='Testnachricht lokal gespeichert. Du kannst die Kategorie unten korrigieren.';showMailAppointment(item);e.target.reset();renderMail();
 });
 document.getElementById('mailFilter').addEventListener('change',renderMail);
 renderMail();
