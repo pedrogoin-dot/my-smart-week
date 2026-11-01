@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>My Smart Week 4.1 – Smart Mail Terminassistent</title>
+<title>My Smart Week 4.2.1 – Smart Mail Terminassistent</title>
 <style>
 :root{font-family:Arial,sans-serif;color:#23334d;background:#eaf4ff}*{box-sizing:border-box}body{margin:0;padding:18px}.app{max-width:1050px;margin:auto}header{text-align:center}h1{color:#2456a6}.card{background:white;padding:20px;border-radius:16px;margin:16px 0;box-shadow:0 4px 12px #0001}.form{display:flex;flex-wrap:wrap;gap:10px}.field{display:flex;flex-direction:column;gap:5px;flex:1 1 140px}input,select,button{padding:10px;border-radius:9px;border:1px solid #c9d5e4;font-size:15px}button{background:#2456a6;color:white;cursor:pointer}button.secondary{background:#e9f1ff;color:#2456a6}button.danger{background:#a33232}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #80b7ff}button:disabled{opacity:.5;cursor:not-allowed}.days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.day{background:#f1f6ff;padding:9px;border-radius:10px;min-height:110px;overflow-wrap:anywhere}.event{background:white;border-left:4px solid #4385e5;padding:8px;margin:7px 0;border-radius:8px;font-size:13px}.event.fest{border-left-color:#ef9b20}.event.offen{border-left-color:#9298a2;border-left-style:dashed}.event.conflict{outline:2px solid #d34848}.event button,.listrow button{font-size:12px;padding:5px 7px;margin-top:5px}.listrow{padding:12px;border-bottom:1px solid #ddd}.hidden{display:none}.notice{background:#fff3dd;padding:10px;border-radius:9px;margin:8px 0}.muted{color:#586b85;font-size:13px}.status{min-height:20px}@media(max-width:750px){.days{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:420px){.days{grid-template-columns:1fr}}
 
@@ -84,7 +84,7 @@ input,select,textarea{border:2px solid #647c9f;background:#fff;color:#142943}
 </style>
 </head>
 <body><div class="app">
-<header><h1>🚀 My Smart Week 4.1</h1><p>📚 Mit deinem Wochenplan 2026/27</p><p>Mein Wochenassistent 🤖</p></header>
+<header><h1>🚀 My Smart Week 4.2.1</h1><p>📚 Mit deinem Wochenplan 2026/27</p><p>Mein Wochenassistent 🤖</p></header>
 <nav class="navgrid" aria-label="Hauptmenü">
 <button class="navtile active" type="button" data-panel="home" style="--tile:#2563eb;--tint:#dbeafe" aria-pressed="true"><span class="symbol">🏠</span><strong>Startseite</strong></button>
 <button class="navtile" type="button" data-panel="calendar" style="--tile:#0d9488;--tint:#ccfbf1" aria-pressed="false"><span class="symbol">📅</span><strong>Kalender</strong></button>
@@ -106,7 +106,7 @@ input,select,textarea{border:2px solid #647c9f;background:#fff;color:#142943}
 <section class="card panel" data-section="school" hidden><h2>🏫 Meine Schule</h2><p>Elternbriefe, Informationsblätter, Einladungen und Stundenpläne sammeln.</p><button type="button" id="schoolUpload">📎 Schul-Dokument hinzufügen</button><p class="muted">Du gelangst zu Smart Files. Der Ordner „Schule“ wird automatisch ausgewählt. Ein Dokument erzeugt nicht ohne deine Zustimmung einen Kalendereintrag.</p></section>
 <section class="card panel" data-section="special" hidden><h2>🎁 Besondere Tage</h2><p>Geburtstage und besondere Ereignisse. Geburtstage wiederholen sich jedes Jahr.</p><form id="specialForm" class="form"><label class="field">Ereignis<input id="specialName" required maxlength="90" placeholder="z. B. Geburtstag von Oma"></label><label class="field">Datum<input id="specialDate" type="date" required></label><label class="field">Wiederholung<select id="specialRepeat"><option value="yearly">Jedes Jahr</option><option value="once">Nur einmal</option></select></label><div class="field"><span>&nbsp;</span><button type="submit">🎁 Speichern</button></div></form><p id="specialStatus" role="status"></p><div id="specialList"></div><p class="muted">Diese Einträge werden nur in diesem Browser gespeichert. Automatische Push-Erinnerungen gibt es noch nicht.</p></section>
 <section class="card panel" data-section="mail" hidden>
-<h2>📧 Smart Mail – Terminassistent 4.0</h2>
+<h2>📧 Smart Mail – Terminassistent 4.2</h2>
 <div class="mail-lab"><strong>🧪 Chefentwickler-Challenge: 5 Testnachrichten</strong>
 <p class="muted">Tippe auf ein Beispiel, überprüfe den Vorschlag und klicke auf „Nachricht prüfen“. Du kannst den Text vorher verändern. Alle Beispiele sind erfunden.</p>
 <div class="mail-test-grid" id="mailSamples"></div>
@@ -240,7 +240,7 @@ function reset(){editing=null;$('eventForm').reset();$('save').textContent='Term
 $('eventForm').addEventListener('submit',e=>{e.preventDefault();const name=$('name').value.trim(),day=$('day').value,start=$('start').value,end=$('end').value,type=$('type').value;
 if(!name||!start||!end||minutes(start)>=minutes(end)){$('status').textContent='Bitte gültigen Namen und eine Endzeit nach der Startzeit eingeben.';return}
 const item={id:editing||uid(),name,day,start,end,type,category:$('category').value};
-if(editing){events=events.map(e=>e.id===editing?item:e)}else{events.push(item)}
+if(editing){const previous=events.find(e=>e.id===editing);if(previous?.mailSourceId)item.mailSourceId=previous.mailSourceId;events=events.map(e=>e.id===editing?item:e)}else{events.push(item)}
 store();reset();render();$('status').textContent='Termin gespeichert!';});
 $('cancel').addEventListener('click',()=>{reset();$('status').textContent='Bearbeitung abgebrochen.'});
 function edit(id){const e=events.find(e=>e.id===id);if(!e)return;editing=id;$('name').value=e.name;$('day').value=e.day;$('start').value=e.start;$('end').value=e.end;$('type').value=e.type;$('category').value=categoryOf(e);$('save').textContent='Änderungen speichern';$('cancel').hidden=false;$('status').textContent='Du bearbeitest einen bestehenden Termin.';window.scrollTo({top:0,behavior:'smooth'});}
@@ -361,10 +361,10 @@ function showMailAppointment(item){
  form.addEventListener('submit',event=>{
   event.preventDefault();
   if(!name.value.trim()||minutes(start.value)>=minutes(end.value)){alert('Bitte gültige Zeiten und einen Namen eingeben.');return;}
-  const sameSource=events.some(e=>e.mailSourceId===item.id&&e.day===day.value&&e.start===start.value&&e.end===end.value);
+  const sameSource=events.some(e=>e.mailSourceId===item.id); // Nur tatsächlich noch vorhandene Kalendertermine blockieren.
   if(sameSource){target.replaceChildren(mailEl('p','ℹ️ Dieser Termin wurde aus dieser Nachricht bereits übernommen. Öffne den Kalender, um ihn zu prüfen.','hint'));return;}
   const sameSlot=events.some(e=>e.day===day.value&&e.start===start.value&&e.end===end.value&&e.name.trim().toLocaleLowerCase('de-DE')===name.value.trim().toLocaleLowerCase('de-DE'));
-  if(sameSlot&&!confirm('Ein Termin mit gleichem Namen, Wochentag und Uhrzeit ist bereits vorhanden. Trotzdem einen weiteren Eintrag anlegen?'))return;
+  if(sameSlot){target.replaceChildren(mailEl('p','ℹ️ Ein identischer Termin steht bereits im Kalender. Lösche ihn zuerst, falls du ihn neu übernehmen möchtest.','hint'));return;}
   if(!confirm('Diesen Termin wirklich in den wiederkehrenden Wochenkalender übernehmen?'))return;
   events.push({id:uid(),name:name.value.trim(),day:day.value,start:start.value,end:end.value,type:'offen',category:category.value,mailSourceId:item.id});
   if(!store()){events.pop();return;}
